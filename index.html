@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projections effectifs scolaires — Landes 2025–2035</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #f0ede8;
+    --bg2:       #e8e4de;
+    --surface:   #faf9f7;
+    --surface2:  #f3f0eb;
+    --border:    #d8d3cb;
+    --border2:   #c8c2b8;
+    --text:      #1c1a17;
+    --text-mid:  #4a4540;
+    --text-muted:#8a847a;
+    --pub:       #2d5a8e;
+    --priv:      #c0392b;
+    --total:     #1e7d5e;
+    --gold:      #b5860d;
+    --lavender:  #6b5b8e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-rule {
+    height: 3px;
+    background: linear-gradient(90deg, var(--pub) 0%, var(--pub) 38%, var(--border) 38%);
+  }
+
+  .header-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 3.5rem 2rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: end;
+  }
+
+  .header-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--pub);
+    font-weight: 500;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .header-label::before {
+    content: '';
+    display: block;
+    width: 2.5rem;
+    height: 1px;
+    background: var(--pub);
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4.5vw, 3.6rem);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--pub);
+  }
+
+  .header-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 1.4rem;
+    line-height: 1.7;
+    border-left: 2px solid var(--border);
+    padding-left: 1rem;
+    max-width: 520px;
+  }
+
+  .header-badge {
+    background: var(--pub);
+    color: #fff;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 0.5rem 0.9rem;
+    border-radius: 2px;
+    align-self: start;
+    white-space: nowrap;
+    margin-top: 0.5rem;
+  }
+
+  /* ── KPI STRIP ── */
+  .kpi-strip-wrap {
+    background: var(--text);
+    border-bottom: 1px solid #2e2c28;
+  }
+
+  .kpi-strip {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .kpi {
+    padding: 1.6rem 1.2rem 1.4rem;
+    border-right: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    transition: background 0.2s;
+  }
+
+  .kpi:last-child { border-right: none; }
+  .kpi:hover { background: rgba(255,255,255,0.03); }
+
+  .kpi-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+    font-weight: 500;
+  }
+
+  .kpi-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.85rem;
+    line-height: 1;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  .kpi-delta {
+    font-size: 0.64rem;
+    color: #e08080;
+    font-weight: 400;
+  }
+
+  .kpi-delta.pos { color: #7dbfa0; }
+
+  /* ── LAYOUT ── */
+  main {
+    max-width: 1180px;
+    margin: 2.5rem auto;
+    padding: 0 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  /* ── TABS ── */
+  .tabs-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.3rem;
+    display: flex;
+    gap: 0.2rem;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .tab-btn:hover { color: var(--text); background: var(--bg2); }
+  .tab-btn.active { background: var(--text); color: #fff; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1.8rem;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.6rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .card-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+  }
+
+  .legend-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-line { width: 18px; height: 2px; flex-shrink: 0; }
+
+  .chart-wrap canvas { max-height: 320px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .section-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .chip {
+    display: inline-block;
+    font-size: 0.58rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.22rem 0.6rem;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+
+  .chip-blue  { color: var(--pub);   border-color: rgba(45,90,142,0.3);  background: rgba(45,90,142,0.06); }
+  .chip-red   { color: var(--priv);  border-color: rgba(192,57,43,0.3);  background: rgba(192,57,43,0.05); }
+  .chip-green { color: var(--total); border-color: rgba(30,125,94,0.3);  background: rgba(30,125,94,0.05); }
+
+  /* ── TABLE ── */
+  .evo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.7rem;
+  }
+
+  .evo-table th {
+    text-align: left;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 2px solid var(--border2);
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-size: 0.58rem;
+    white-space: nowrap;
+    background: var(--surface2);
+  }
+
+  .evo-table td {
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-mid);
+  }
+
+  .evo-table tr:last-child td {
+    border-bottom: none;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--bg2);
+  }
+
+  .evo-table tr:hover:not(:last-child) td { background: var(--surface2); }
+  .evo-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .evo-table td.delta-neg { color: var(--priv);  text-align: right; font-weight: 500; }
+  .evo-table td.delta-pos { color: var(--total); text-align: right; font-weight: 500; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--text);
+    color: rgba(255,255,255,0.32);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    line-height: 1.9;
+    margin-top: 1rem;
+  }
+
+  footer strong { color: rgba(255,255,255,0.58); }
+
+  /* ── RESPONSIVE ── */
+
+  /* Tablet */
+  @media (max-width: 900px) {
+    .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+    .kpi:nth-child(4), .kpi:nth-child(5) { border-top: 1px solid rgba(255,255,255,0.07); }
+    .two-col { grid-template-columns: 1fr; }
+    .header-inner { grid-template-columns: 1fr; }
+    .header-badge { display: none; }
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    header { padding: 0; }
+    .header-inner { padding: 2rem 1rem 1.8rem; gap: 1rem; }
+    h1 { font-size: 1.9rem; line-height: 1.2; }
+    .header-label { font-size: 0.6rem; }
+    .header-meta { font-size: 0.7rem; margin-top: 1rem; }
+
+    .kpi-strip-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .kpi-strip {
+      grid-template-columns: repeat(5, minmax(130px, 1fr));
+      min-width: 650px;
+      padding: 0 1rem;
+    }
+    .kpi { padding: 1.2rem 0.9rem; }
+    .kpi-value { font-size: 1.5rem; }
+
+    main { padding: 0 1rem; margin: 1.5rem auto; gap: 1.2rem; }
+
+    .tabs-bar {
+      padding: 0.25rem;
+      gap: 0.15rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-wrap: nowrap;
+    }
+    .tab-btn {
+      font-size: 0.65rem;
+      padding: 0.55rem 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .card { padding: 1.2rem 1rem; }
+    .card-header { flex-direction: column; gap: 0.6rem; margin-bottom: 1.1rem; }
+    .card-title { font-size: 1.05rem; }
+    .legend { gap: 0.8rem; }
+
+    .chart-wrap canvas { max-height: 240px !important; }
+
+    .section-label { font-size: 0.55rem; }
+
+    .evo-table { font-size: 0.62rem; }
+    .evo-table th { font-size: 0.52rem; padding: 0.45rem 0.6rem; }
+    .evo-table td { padding: 0.45rem 0.6rem; }
+
+    footer { padding: 1.8rem 1rem; font-size: 0.58rem; }
+
+    /* Hide Δ 2025→30 column on very small screens to save space */
+    .evo-table th:nth-child(4),
+    .evo-table td:nth-child(4) { display: none; }
+  }
+
+  @media (max-width: 380px) {
+    h1 { font-size: 1.6rem; }
+    .kpi-value { font-size: 1.35rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-rule"></div>
+  <div class="header-inner">
+    <div>
+      <div class="header-label">Académie de Bordeaux — Landes (040)</div>
+      <h1>Projections des<br><em>effectifs scolaires</em><br>2025–2035</h1>
+      <p class="header-meta">
+        Évolution projetée des élèves du premier et second degré dans les Landes, secteurs public et privé sous contrat.<br>
+        <strong>Source :</strong> DEPP / Ministère de l'Éducation nationale · Constat de rentrée 2025
+      </p>
+    </div>
+    <div class="header-badge">DEPP · 2025–2035</div>
+  </div>
+</header>
+
+<div class="kpi-strip-wrap">
+  <div class="kpi-strip">
+    <div class="kpi">
+      <span class="kpi-label">1er degré · 2025</span>
+      <span class="kpi-value">33 016</span>
+      <span class="kpi-delta">▼ −11,4 % en 2035</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">2nd degré · 2025</span>
+      <span class="kpi-value">30 305</span>
+      <span class="kpi-delta">▼ −15,7 % en 2035</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Total général · 2025</span>
+      <span class="kpi-value">63 321</span>
+      <span class="kpi-delta">▼ −13,4 % en 2035</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Collège total · 2025</span>
+      <span class="kpi-value">19 131</span>
+      <span class="kpi-delta">▼ −15,9 % en 2035</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Préélémentaire pub. 2025</span>
+      <span class="kpi-value">10 809</span>
+      <span class="kpi-delta">▼ −7,4 % en 2035</span>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('compare',this)">Vue globale</button>
+    <button class="tab-btn" onclick="switchTab('1d',this)">1er degré</button>
+    <button class="tab-btn" onclick="switchTab('2d',this)">2nd degré</button>
+    <button class="tab-btn" onclick="switchTab('lyc',this)">Lycée</button>
+  </div>
+
+  <!-- TAB 1D -->
+  <div class="tab-panel" id="tab-1d">
+    <div class="section-label">Premier degré · vue d'ensemble</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Total 1er degré — Public, Privé, Ensemble</div>
+          <div class="card-desc">Projection 2025–2035, maternelle + élémentaire + ULIS</div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--pub)"></div>Public</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--priv)"></div>Privé</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--total)"></div>Total</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="chart1dTotal"></canvas></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Préélémentaire</div>
+            <div class="card-desc">2 ans · 3 ans · 4 ans · 5 ans et plus</div>
+          </div>
+          <span class="chip chip-blue">Public</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartPreelemPub"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Élémentaire</div>
+            <div class="card-desc">CP · CE1 · CE2 · CM1 · CM2</div>
+          </div>
+          <span class="chip chip-blue">Public</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartElemPub"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Public vs Privé — Totaux 1er degré</div>
+          <div class="card-desc">Comparaison annuelle des effectifs totaux</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartPubPriv1d"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Tableau de synthèse — 1er degré</div>
+          <div class="card-desc">Effectifs totaux (public + privé) par niveau, variations 2025→2030 et 2025→2035</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table class="evo-table" id="table1d"></table></div>
+    </div>
+  </div>
+
+  <!-- TAB 2D -->
+  <div class="tab-panel" id="tab-2d">
+    <div class="section-label">Second degré · collège</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Effectifs au collège — Total Landes</div>
+          <div class="card-desc">Sixième à Troisième, Segpa, ULIS — public + privé sous contrat</div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--pub)"></div>6e–3e</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Segpa</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--lavender)"></div>ULIS</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--total)"></div>Total</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartCollege"></canvas></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Niveaux collège (public)</div>
+            <div class="card-desc">6e · 5e · 4e · 3e</div>
+          </div>
+          <span class="chip chip-blue">Public</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartCollegeNiv"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Public vs Privé — Collège</div>
+            <div class="card-desc">Total Sixième–Troisième par secteur</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartCollegePubPriv"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB LYCÉE -->
+  <div class="tab-panel" id="tab-lyc">
+    <div class="section-label">Second degré · lycée général, technologique, professionnel</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Formations générales &amp; technologiques en lycée</div>
+          <div class="card-desc">Seconde GT · Premières · Terminales — public + privé</div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--pub)"></div>Seconde GT</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--total)"></div>1ères G+T</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--lavender)"></div>Terminales G+T</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartLycGT"></canvas></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Voie professionnelle</div>
+            <div class="card-desc">CAP · Seconde / Première / Terminale pro — total</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartLycPro"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Total 2nd degré</div>
+            <div class="card-desc">Collège + lycée, public + privé</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartTotal2d"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB GLOBAL -->
+  <div class="tab-panel active" id="tab-compare">
+    <div class="section-label">Vue globale · comparaisons</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Évolution globale 2025–2035 — base 100</div>
+          <div class="card-desc">1er degré vs 2nd degré vs Total — indice base 100 en 2025</div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-line" style="background:var(--pub)"></div>1er degré</div>
+          <div class="legend-item"><div class="legend-line" style="background:var(--lavender)"></div>2nd degré</div>
+          <div class="legend-item"><div class="legend-line" style="background:var(--total)"></div>Total général</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartBase100"></canvas></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Répartition Public / Privé · 1er degré</div>
+            <div class="card-desc">Parts de marché en 2025</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;min-height:220px;">
+          <canvas id="chartDoughnut1d" style="max-height:220px;max-width:280px;"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Répartition Public / Privé · 2nd degré</div>
+            <div class="card-desc">Parts de marché en 2025</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;min-height:220px;">
+          <canvas id="chartDoughnut2d" style="max-height:220px;max-width:280px;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Tableau de bord — Années clés</div>
+          <div class="card-desc">Effectifs et variations 2025 → 2030 → 2035, niveaux principaux</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table class="evo-table" id="tableGlobal"></table></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>Académie de Bordeaux — Landes (040)</strong> · Projections effectifs scolaires 2025–2035<br>
+  Source : Constat de rentrée 2025 ; Insee, estimations de population ; pyramides des âges redressées, calculs DEPP<br>
+  Secteurs public et privé sous contrat — hors classes hors contrat
+</footer>
+
+<script>
+const years = [2025,2026,2027,2028,2029,2030,2031,2032,2033,2034,2035];
+
+const d1dPub = {
+  total:        [30418,29757,29260,28844,28518,28120,27819,27461,27021,27093,27294],
+  preelemTotal: [10809,10555,10139,9620,9563,9605,9658,9729,9806,9896,10007],
+  elemTotal:    [19327,18919,18830,18927,18659,18221,17870,17443,16934,16915,17004],
+  cp:  [3791,3712,3797,3908,3440,3354,3367,3370,3395,3422,3444],
+  ce1: [3713,3796,3717,3802,3912,3444,3358,3371,3374,3399,3426],
+  ce2: [3851,3749,3833,3753,3838,3950,3477,3391,3403,3406,3431],
+  cm1: [3870,3791,3691,3773,3694,3778,3888,3423,3338,3350,3352],
+  cm2: [4102,3871,3792,3691,3774,3695,3779,3888,3424,3338,3351],
+  p2ans:[89,88,88,88,89,90,91,92,93,95,96],
+  p3ans:[3539,3095,3028,3045,3047,3071,3096,3116,3145,3183,3223],
+  p4ans:[3553,3657,3198,3131,3148,3150,3175,3200,3220,3250,3289],
+  p5ans:[3628,3716,3825,3356,3279,3294,3296,3322,3348,3369,3400],
+};
+
+const d1dPriv = { total:[2598,2520,2450,2429,2374,2342,2318,2289,2247,2251,2267] };
+
+const d1dTotal = {
+  total:   [33016,32277,31710,31272,30893,30462,30137,29750,29268,29344,29561],
+  preelem: [11694,11421,10975,10413,10350,10395,10452,10529,10612,10710,10830],
+  elem:    [21014,20547,20417,20536,20219,19747,19367,18906,18349,18326,18421],
+  cp:  [4088,4003,4094,4214,3711,3618,3631,3633,3661,3689,3713],
+  ce1: [4034,4098,4012,4103,4223,3719,3626,3639,3641,3669,3697],
+  ce2: [4162,4091,4154,4067,4159,4281,3770,3675,3688,3691,3718],
+  cm1: [4223,4099,4028,4090,4005,4095,4215,3712,3619,3631,3634],
+  cm2: [4507,4257,4128,4061,4121,4035,4126,4247,3740,3646,3659],
+};
+
+const d2dPub = {
+  sixieme:   [3984,3939,3723,3638,3551,3620,3547,3625,3722,3288,3206],
+  cinquieme: [4185,3980,3936,3725,3640,3556,3621,3549,3626,3717,3293],
+  quatrieme: [4174,4185,3985,3941,3736,3648,3568,3629,3558,3633,3720],
+  troisieme: [4108,4068,4076,3892,3846,3653,3566,3491,3543,3478,3547],
+  totalCollege6a3: [16451,16172,15720,15196,14773,14477,14302,14294,14449,14116,13766],
+  formPro: [3047,3060,3046,3030,2982,2935,2857,2785,2717,2690,2669],
+  sec2GT:  [2443,2396,2365,2370,2270,2242,2138,2081,2042,2063,2030],
+  formGT:  [6819,6712,6641,6591,6466,6356,6146,5974,5799,5735,5684],
+  total2d: [27057,26709,26166,25562,24951,24490,24018,23763,23681,23240,22801],
+};
+
+const d2dPriv = {
+  totalCollege6a3: [1889,1856,1844,1769,1747,1698,1662,1664,1668,1633,1596],
+  total2d: [3248,3200,3159,3064,3010,2952,2887,2857,2835,2783,2737],
+};
+
+const d2dTotal = {
+  college:    [19131,18845,18376,17761,17299,16945,16725,16715,16882,16496,16089],
+  college6a3: [18340,18028,17564,16965,16520,16175,15964,15958,16117,15749,15362],
+  formPro:    [3524,3525,3496,3477,3421,3369,3283,3201,3126,3095,3071],
+  sec2GT:     [2732,2677,2627,2641,2525,2501,2386,2316,2280,2298,2262],
+  formGT:     [7650,7539,7453,7389,7241,7127,6897,6703,6509,6433,6378],
+  total2d:    [30305,29909,29325,28626,27961,27442,26905,26620,26516,26023,25538],
+};
+
+// Chart defaults
+Chart.defaults.color = '#8a847a';
+Chart.defaults.font.family = "'Instrument Sans', sans-serif";
+Chart.defaults.font.size = 10;
+Chart.defaults.font.weight = '400';
+
+const gc = '#ddd8d0';
+
+function baseOpts() {
+  return {
+    responsive:true, maintainAspectRatio:true,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{
+      legend:{ display:false },
+      tooltip:{
+        backgroundColor:'#1c1a17', borderColor:'#3a3630', borderWidth:1,
+        titleColor:'#f0ede8', bodyColor:'#a09890', padding:12,
+        callbacks:{ label: ctx=>`  ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('fr-FR')}` }
+      }
+    },
+    scales:{
+      x:{ grid:{color:'transparent'}, ticks:{color:'#8a847a'}, border:{color:gc} },
+      y:{ grid:{color:gc,lineWidth:0.8}, ticks:{color:'#8a847a', callback:v=>v.toLocaleString('fr-FR')}, border:{color:'transparent'} }
+    }
+  };
+}
+
+function line(color, data, label, dash=[]) {
+  return { label, data, borderColor:color, backgroundColor:color+'14', borderWidth:2,
+    pointRadius:3, pointBackgroundColor:color, pointHoverRadius:5,
+    fill:false, tension:0.35, borderDash:dash };
+}
+
+function bar(color, data, label) {
+  return { label, data, backgroundColor:color+'cc', borderColor:color, borderWidth:1, borderRadius:2 };
+}
+
+const stackedOpts = () => ({
+  ...baseOpts(),
+  plugins:{ ...baseOpts().plugins, legend:{display:true,position:'bottom',labels:{color:'#8a847a',boxWidth:10,font:{size:9}}} },
+  scales:{
+    x:{stacked:true,grid:{color:'transparent'},ticks:{color:'#8a847a'},border:{color:gc}},
+    y:{stacked:true,grid:{color:gc,lineWidth:0.8},ticks:{color:'#8a847a',callback:v=>v.toLocaleString('fr-FR')},border:{color:'transparent'}}
+  }
+});
+
+// ─── BUILD CHARTS ───────────────────────────────────────────
+
+new Chart('chart1dTotal',{type:'line',data:{labels:years,datasets:[
+  line('#2d5a8e',d1dPub.total,'Public'),
+  line('#c0392b',d1dPriv.total,'Privé'),
+  line('#1e7d5e',d1dTotal.total,'Total',[5,3]),
+]},options:baseOpts()});
+
+new Chart('chartPreelemPub',{type:'bar',data:{labels:years,datasets:[
+  bar('#1a3d66',d1dPub.p2ans,'2 ans'),
+  bar('#2d5a8e',d1dPub.p3ans,'3 ans'),
+  bar('#5280b8',d1dPub.p4ans,'4 ans'),
+  bar('#88aad4',d1dPub.p5ans,'5 ans et plus'),
+]},options:stackedOpts()});
+
+new Chart('chartElemPub',{type:'bar',data:{labels:years,datasets:[
+  bar('#1a3d66',d1dPub.cp,'CP'),
+  bar('#2d5a8e',d1dPub.ce1,'CE1'),
+  bar('#5280b8',d1dPub.ce2,'CE2'),
+  bar('#88aad4',d1dPub.cm1,'CM1'),
+  bar('#b8cce6',d1dPub.cm2,'CM2'),
+]},options:stackedOpts()});
+
+new Chart('chartPubPriv1d',{type:'bar',data:{labels:years,datasets:[
+  bar('#2d5a8e',d1dPub.total,'Public'),
+  bar('#c0392b',d1dPriv.total,'Privé'),
+]},options:{...baseOpts(),plugins:{...baseOpts().plugins,legend:{display:true,position:'bottom',labels:{color:'#8a847a',boxWidth:10,font:{size:9}}}}}});
+
+new Chart('chartCollege',{type:'line',data:{labels:years,datasets:[
+  line('#2d5a8e',d2dTotal.college6a3,'6e–3e'),
+  line('#b5860d',[361,381,376,366,356,348,344,344,347,341,333],'Segpa'),
+  line('#6b5b8e',[430,437,434,429,424,419,415,414,416,406,394],'ULIS'),
+  line('#1e7d5e',d2dTotal.college,'Total collège',[5,3]),
+]},options:baseOpts()});
+
+new Chart('chartCollegeNiv',{type:'line',data:{labels:years,datasets:[
+  line('#1a3d66',d2dPub.sixieme,'6e'),
+  line('#2d5a8e',d2dPub.cinquieme,'5e'),
+  line('#5280b8',d2dPub.quatrieme,'4e'),
+  line('#88aad4',d2dPub.troisieme,'3e'),
+]},options:baseOpts()});
+
+new Chart('chartCollegePubPriv',{type:'line',data:{labels:years,datasets:[
+  line('#2d5a8e',d2dPub.totalCollege6a3,'Public 6e–3e'),
+  line('#c0392b',d2dPriv.totalCollege6a3,'Privé 6e–3e'),
+]},options:baseOpts()});
+
+const termGT = [2449,2393,2393,2359,2317,2325,2233,2209,2115,2054,2020];
+const prem1GT = d2dTotal.formGT.map((v,i)=>v-d2dTotal.sec2GT[i]-termGT[i]);
+
+new Chart('chartLycGT',{type:'line',data:{labels:years,datasets:[
+  line('#2d5a8e',d2dTotal.sec2GT,'Seconde GT'),
+  line('#1e7d5e',prem1GT,'1ères G+T'),
+  line('#6b5b8e',termGT,'Terminales G+T'),
+  line('#1c1a17',d2dTotal.formGT,'Total GT',[5,3]),
+]},options:baseOpts()});
+
+new Chart('chartLycPro',{type:'bar',data:{labels:years,datasets:[
+  bar('#b5860d',d2dTotal.formPro,'Formations pro'),
+]},options:baseOpts()});
+
+new Chart('chartTotal2d',{type:'line',data:{labels:years,datasets:[
+  line('#2d5a8e',d2dTotal.college,'Collège'),
+  line('#b5860d',d2dTotal.formPro,'Lycée pro'),
+  line('#6b5b8e',d2dTotal.formGT,'Lycée GT'),
+  line('#1e7d5e',d2dTotal.total2d,'Total 2nd degré',[5,3]),
+]},options:baseOpts()});
+
+const b1=d1dTotal.total[0], b2=d2dTotal.total2d[0], bT=b1+b2;
+new Chart('chartBase100',{type:'line',data:{labels:years,datasets:[
+  line('#2d5a8e',d1dTotal.total.map(v=>+(v/b1*100).toFixed(1)),'1er degré'),
+  line('#6b5b8e',d2dTotal.total2d.map(v=>+(v/b2*100).toFixed(1)),'2nd degré'),
+  line('#1e7d5e',d1dTotal.total.map((v,i)=>+((v+d2dTotal.total2d[i])/bT*100).toFixed(1)),'Total',[5,3]),
+]},options:{...baseOpts(),scales:{...baseOpts().scales,y:{grid:{color:gc,lineWidth:0.8},ticks:{color:'#8a847a',callback:v=>v+''},border:{color:'transparent'},min:80,max:105}}}});
+
+const dOpts={responsive:true,maintainAspectRatio:true,plugins:{
+  legend:{position:'bottom',labels:{color:'#8a847a',boxWidth:12,font:{size:9}}},
+  tooltip:{callbacks:{label:ctx=>`  ${ctx.label}: ${ctx.parsed.toLocaleString('fr-FR')} (${(ctx.parsed/ctx.dataset.data.reduce((a,b)=>a+b,0)*100).toFixed(1)}%)`}}
+}};
+
+new Chart('chartDoughnut1d',{type:'doughnut',data:{labels:['Public','Privé sous contrat'],datasets:[{data:[30418,2598],backgroundColor:['#2d5a8e','#c0392b'],borderColor:'#faf9f7',borderWidth:4}]},options:dOpts});
+new Chart('chartDoughnut2d',{type:'doughnut',data:{labels:['Public','Privé sous contrat'],datasets:[{data:[27057,3248],backgroundColor:['#2d5a8e','#c0392b'],borderColor:'#faf9f7',borderWidth:4}]},options:dOpts});
+
+// ─── TABLES ─────────────────────────────────────────────────
+function pct(a,b){const p=(b-a)/a*100;return `<td class="${p<0?'delta-neg':'delta-pos'}">${p>0?'+':''}${p.toFixed(1)} %</td>`;}
+function num(v){return `<td class="num">${v.toLocaleString('fr-FR')}</td>`;}
+
+function buildTable(id, rows){
+  let h='<thead><tr><th>Niveau</th><th class="num">2025</th><th class="num">2030</th><th class="num">2035</th><th>Δ 2025→30</th><th>Δ 2025→35</th></tr></thead><tbody>';
+  rows.forEach(([l,d])=>{ h+=`<tr><td>${l}</td>${num(d[0])}${num(d[5])}${num(d[10])}${pct(d[0],d[5])}${pct(d[0],d[10])}</tr>`; });
+  document.getElementById(id).innerHTML=h+'</tbody>';
+}
+
+buildTable('table1d',[
+  ['Préélémentaire',d1dTotal.preelem],
+  ['— CP',d1dTotal.cp],['— CE1',d1dTotal.ce1],['— CE2',d1dTotal.ce2],
+  ['— CM1',d1dTotal.cm1],['— CM2',d1dTotal.cm2],
+  ['Élémentaire',d1dTotal.elem],
+  ['<strong>Total 1er degré</strong>',d1dTotal.total],
+]);
+
+buildTable('tableGlobal',[
+  ['1er degré — Public',d1dPub.total],
+  ['1er degré — Privé',d1dPriv.total],
+  ['<strong>1er degré — Total</strong>',d1dTotal.total],
+  ['Collège',d2dTotal.college],
+  ['Lycée pro',d2dTotal.formPro],
+  ['Lycée GT',d2dTotal.formGT],
+  ['2nd degré — Public',d2dPub.total2d],
+  ['2nd degré — Privé',d2dPriv.total2d],
+  ['<strong>2nd degré — Total</strong>',d2dTotal.total2d],
+  ['<strong>TOTAL GÉNÉRAL</strong>',years.map((_,i)=>d1dTotal.total[i]+d2dTotal.total2d[i])],
+]);
+
+// ─── TABS ────────────────────────────────────────────────────
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
